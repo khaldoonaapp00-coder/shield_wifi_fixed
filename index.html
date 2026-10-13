@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#071425">
+<title>Shield WiFi Iraq</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#071425;color:#eef6ff;font-family:Arial,Tahoma,sans-serif;line-height:1.6}.wrap{max-width:720px;margin:auto;padding:16px}.hero,.card{background:#102238;border:1px solid #28415b;border-radius:16px;padding:17px;margin-bottom:14px}.hero{text-align:center;background:linear-gradient(140deg,#123650,#102238)}.logo{font-size:38px}h1{font-size:26px;margin:4px}h2{font-size:19px;margin:0 0 10px}.muted,small{color:#a8bad0}.field{display:block;margin:13px 0}.field span{display:block;margin-bottom:6px}select,input[type=password],input[type=text]{width:100%;padding:12px;border:1px solid #38536d;border-radius:10px;background:#081827;color:#fff;font-size:16px}.check{display:flex;gap:10px;align-items:flex-start;margin:12px 0}.check input{width:19px;height:19px;flex-shrink:0;margin-top:4px;accent-color:#39d5e6}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}button{border:0;border-radius:10px;padding:12px 15px;font-size:15px;font-weight:bold;cursor:pointer}.primary{background:#39d5e6;color:#052033;flex:1}.secondary{background:#203b55;color:white}.password-row{display:flex;gap:8px}.password-row input{flex:1;min-width:0}.password-row button{background:#203b55;color:white}.hidden{display:none}.score{font-size:36px;font-weight:bold;color:#39d5e6}.bar{height:9px;background:#26394e;border-radius:20px;overflow:hidden;margin:8px 0 15px}.bar div{height:100%;width:0;background:#39d5e6}.issue{border-top:1px solid #28415b;padding:12px 0}.issue p{margin:4px 0;color:#b5c6d9}.notice{padding:11px;background:#19354b;border-radius:10px;font-size:13px;color:#d6eaf6}.footer{text-align:center;color:#829bb4;font-size:12px;padding:12px}@media print{body{background:white;color:black}.hero,.card{background:white;color:black;border:1px solid #aaa}.buttons{display:none}.hidden{display:block}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="hero"><div class="logo">🛡️</div><h1>Shield WiFi Iraq</h1><div>مساعد فحص أمان شبكة الواي فاي</div><p class="notice">هذا تقييم إرشادي يعتمد على إجاباتك؛ الموقع لا يتصل بالراوتر ولا يكتشف الأجهزة المتصلة تلقائياً.</p></header>
+<section class="card">
+<h2>📡 إعدادات الشبكة</h2>
+<label class="field"><span>نوع التشفير</span><select id="encryption"><option value="unknown">ما أعرف</option><option value="wpa3">WPA3</option><option value="wpa2">WPA2-AES</option><option value="old">WEP أو WPA قديم أو بدون حماية</option></select></label>
+<label class="check"><input id="wps" type="checkbox"><span>ميزة WPS مفعّلة</span></label>
+<label class="check"><input id="admin" type="checkbox"><span>كلمة مرور إدارة الراوتر ما زالت الافتراضية أو لم أغيّرها</span></label>
+<label class="check"><input id="remote" type="checkbox"><span>الإدارة عن بُعد مفعّلة ولا أحتاجها</span></label>
+<label class="check"><input id="firmware" type="checkbox"><span>الراوتر يحتاج تحديثاً أو لا أعرف حالة التحديث</span></label>
+<label class="check"><input id="unknownDevices" type="checkbox"><span>لاحظت أجهزة لا أعرفها في قائمة الأجهزة المتصلة</span></label>
+</section>
+<section class="card">
+<h2>🔑 تقييم كلمة المرور</h2><p class="muted">اختياري: التقييم محلي داخل المتصفح. لا تدخل كلمة مرور تستخدمها لحساباتك الشخصية.</p>
+<label class="field"><span>كلمة مرور الواي فاي</span><div class="password-row"><input id="password" type="password" maxlength="128" autocomplete="off" placeholder="اختياري"><button id="togglePass" type="button">إظهار</button></div></label>
+<div id="strength" class="muted">لم تدخل كلمة مرور بعد.</div>
+<div class="buttons"><button class="primary" id="scan" type="button">حلّل إعداداتي</button><button class="secondary" id="reset" type="button">إعادة ضبط</button></div>
+</section>
+<section class="card hidden" id="result" aria-live="polite">
+<h2>📊 نتيجة التقييم</h2><div class="score" id="score">--/100</div><div class="bar"><div id="barFill"></div></div><strong id="grade"></strong><p id="summary" class="muted"></p><div id="issues"></div>
+<div class="buttons"><button class="primary" id="download" type="button">تنزيل التقرير TXT</button><button class="secondary" id="print" type="button">طباعة / حفظ PDF</button></div>
+</section>
+<section class="card"><h2>🧭 نصائح سريعة</h2><ul><li>استخدم WPA3 أو WPA2-AES.</li><li>عطّل WPS إذا لم تكن تحتاجه.</li><li>غيّر كلمة مرور إدارة الراوتر الافتراضية.</li><li>حدّث الراوتر من الشركة المصنّعة.</li><li>راجع الأجهزة المتصلة من تطبيق الراوتر الرسمي.</li></ul></section>
+<footer class="footer">Shield WiFi Iraq · إصدار HTML مستقل</footer>
+</main>
+<script>
+(function(){
+'use strict';
+function byId(id){return document.getElementById(id)}
+var report='';
+function passwordScore(value){
+ if(!value)return {points:null,text:'لم تدخل كلمة مرور بعد.'};
+ var p=0;
+ if(value.length>=16)p+=3;else if(value.length>=12)p+=2;else if(value.length>=8)p+=1;
+ if(/[a-z]/.test(value))p++;
+ if(/[A-Z]/.test(value))p++;
+ if(/[0-9]/.test(value))p++;
+ if(/[^A-Za-z0-9]/.test(value))p++;
+ if(/(.)\1{3,}/.test(value))p-=2;
+ if(/password|qwerty|123456|admin|111111/i.test(value))p-=3;
+ p=Math.max(0,Math.min(7,p));
+ var text=p>=6&&value.length>=12?'تبدو قوية وفق فحص مبسط.':p>=4?'متوسطة؛ جرّب عبارة أطول وفريدة.':'ضعيفة أو قابلة للتخمين؛ استخدم عبارة أطول وفريدة.';
+ return {points:p,text:text};
+}
+function showStrength(){try{byId('strength').textContent=passwordScore(byId('password').value).text;}catch(e){byId('strength').textContent='تعذر تقييم كلمة المرور.';}}
+function analyze(){
+ var issues=[],deductions=0;
+ function add(level,title,detail,points){issues.push({level:level,title:title,detail:detail});deductions+=points;}
+ var enc=byId('encryption').value;
+ if(enc==='old')add('عالية','التشفير قديم أو غير مفعّل','اختر WPA3 أو WPA2-AES إن كان متاحاً.',35);
+ else if(enc==='unknown')add('متوسطة','نوع التشفير غير معروف','تحقق من إعدادات الحماية في صفحة الراوتر.',12);
+ else if(enc==='wpa2')add('منخفضة','تم اختيار WPA2-AES','استخدم WPA3 إذا كان مدعوماً ومتوافقاً مع أجهزتك.',2);
+ if(byId('wps').checked)add('متوسطة','ميزة WPS مفعّلة','عطّلها إذا لم تكن بحاجة إليها.',12);
+ if(byId('admin').checked)add('عالية','راجع كلمة مرور إدارة الراوتر','غيّرها إلى كلمة فريدة وغير افتراضية.',20);
+ if(byId('remote').checked)add('متوسطة','الإدارة عن بُعد غير ضرورية','عطّلها إذا لم تكن تحتاج إلى الوصول من خارج المنزل.',12);
+ if(byId('firmware').checked)add('متوسطة','تحقق من تحديث الراوتر','راجع التحديثات الرسمية لطراز جهازك.',10);
+ if(byId('unknownDevices').checked)add('عالية','أجهزة غير معروفة','راجع قائمة الأجهزة في تطبيق الراوتر، وغيّر كلمة مرور الواي فاي إذا تأكدت من وجود دخول غير مصرح به.',18);
+ var pw=passwordScore(byId('password').value);
+ if(pw.points===null)add('منخفضة','لم يتم تقييم كلمة المرور','يمكنك ترك الحقل فارغاً أو إدخال كلمة مرور شبكة الاختبار.',3);
+ else if(pw.points<=3)add('عالية','كلمة المرور تحتاج تحسيناً','استخدم عبارة طويلة وفريدة، ويفضل 16 محرفاً أو أكثر.',18);
+ else if(pw.points<=5)add('متوسطة','حسّن كلمة المرور','زد طولها وتجنب الكلمات الشائعة والمعلومات الشخصية.',8);
+ var score=Math.max(0,100-deductions);
+ byId('score').textContent=score+'/100';byId('barFill').style.width=score+'%';
+ var grade=score>=85?'جيد مبدئياً':score>=60?'يحتاج تحسينات':'يحتاج اهتماماً';byId('grade').textContent=grade;
+ byId('summary').textContent='نتيجة إرشادية مبنية على إجاباتك، وليست فحصاً مباشراً للشبكة.';
+ var host=byId('issues');host.textContent='';
+ for(var i=0;i<issues.length;i++){
+  var box=document.createElement('div');box.className='issue';
+  var title=document.createElement('strong');title.textContent='['+issues[i].level+'] '+issues[i].title;
+  var para=document.createElement('p');para.textContent=issues[i].detail;
+  box.appendChild(title);box.appendChild(para);host.appendChild(box);
+ }
+ if(!issues.length){host.textContent='لم تظهر ملاحظات من إجاباتك الحالية. راجع إعدادات الراوتر يدوياً أيضاً.';}
+ report='Shield WiFi Iraq - تقرير توعوي\nالتقييم: '+score+'/100\n'+grade+'\n\n'+issues.map(function(x,i){return (i+1)+'. '+x.title+'\n'+x.detail;}).join('\n\n')+'\n\nهذا التقرير مبني على إجابات المستخدم وليس فحصاً تقنياً مباشراً.';
+ byId('result').classList.remove('hidden');
+}
+byId('scan').addEventListener('click',function(){try{analyze();}catch(e){alert('حدث خطأ أثناء التقييم. حدّث الصفحة وحاول مجدداً.');}});
+byId('reset').addEventListener('click',function(){['wps','admin','remote','firmware','unknownDevices'].forEach(function(id){byId(id).checked=false;});byId('encryption').value='unknown';byId('password').value='';byId('password').type='password';byId('togglePass').textContent='إظهار';byId('result').classList.add('hidden');report='';showStrength();});
+byId('password').addEventListener('input',showStrength);
+byId('togglePass').addEventListener('click',function(){var field=byId('password');field.type=field.type==='password'?'text':'password';byId('togglePass').textContent=field.type==='password'?'إظهار':'إخفاء';});
+byId('download').addEventListener('click',function(){try{if(!report){alert('نفّذ التقييم أولاً.');return;}var blob=new Blob(['\uFEFF'+report],{type:'text/plain;charset=utf-8'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='shield-wifi-report.txt';document.body.appendChild(a);a.click();a.parentNode.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},1000);}catch(e){alert('تعذر تنزيل التقرير؛ جرّب خيار الطباعة.');}});
+byId('print').addEventListener('click',function(){window.print();});
+showStrength();
+})();
+</script>
+</body>
+</html>
